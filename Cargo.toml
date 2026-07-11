@@ -1,0 +1,33 @@
+[package]
+name = "fade-and-skip"
+version = "0.1.0"
+edition = "2021"
+description = "A tiny always-on-top utility: fade the system volume, pause, restore volume, skip to next track."
+
+[dependencies]
+# GUI. `glow` is the OpenGL rendering backend (no extra native SDKs needed
+# on Windows or macOS); `persistence` + our own config.rs save the fade
+# duration between launches.
+eframe = { version = "0.27", default-features = false, features = ["glow", "default_fonts", "persistence"] }
+egui = "0.27"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "6"
+
+# --- Windows: Core Audio (volume) + SendInput (media keys) ---
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_System_Com",
+    "Win32_UI_Input_KeyboardAndMouse",
+] }
+
+# --- macOS: NSEvent/CGEventPost (media keys); volume goes through osascript ---
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2"
+
+[profile.release]
+opt-level = 2
+strip = true
