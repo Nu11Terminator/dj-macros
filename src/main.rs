@@ -173,45 +173,42 @@ fn run_sequence(action: Action, fade_seconds: f32, status: &SharedStatus, ctx: &
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
-                ui.add_space(10.0);
+            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                 ui.heading("Fade & Skip");
-                ui.add_space(8.0);
+                ui.add_space(10.0);
 
-                ui.horizontal(|ui| {
-                    ui.label("Fade length:");
-                    let mut secs = self.config.fade_seconds;
-                    let slider = egui::Slider::new(&mut secs, 0.0..=15.0)
-                        .suffix(" s")
-                        .fixed_decimals(1);
-                    if ui.add(slider).changed() {
-                        self.config.fade_seconds = secs;
-                        self.config.save();
-                    }
-                });
-
-                ui.add_space(14.0);
-
-                let busy = self.status.busy.load(Ordering::SeqCst);
-                ui.add_enabled_ui(!busy, |ui| {
-                    ui.vertical_centered(|ui| {
-                        let buttons = [
-                            ("Fade -> Pause -> Next", Action::Full),
-                            ("Fade -> Pause", Action::FadePause),
-                            ("Restore -> Next", Action::RestoreNext),
-                        ];
-                        for (label, action) in buttons {
-                            let button = egui::Button::new(egui::RichText::new(label).size(15.0))
-                                .min_size(egui::vec2(220.0, 34.0));
-                            if ui.add(button).clicked() {
-                                self.trigger(ctx, action);
-                            }
-                            ui.add_space(6.0);
+                ui.allocate_ui(egui::vec2(220.0, 20.0), |ui| {
+                    ui.horizontal_centered(|ui| {
+                        ui.label("Fade length:");
+                        let mut secs = self.config.fade_seconds;
+                        let slider = egui::Slider::new(&mut secs, 0.0..=15.0)
+                            .suffix(" s")
+                            .fixed_decimals(1);
+                        if ui.add(slider).changed() {
+                            self.config.fade_seconds = secs;
+                            self.config.save();
                         }
                     });
                 });
 
-                ui.add_space(10.0);
+                ui.add_space(12.0);
+
+                let busy = self.status.busy.load(Ordering::SeqCst);
+                let buttons = [
+                    ("Fade -> Pause -> Next", Action::Full),
+                    ("Fade -> Pause", Action::FadePause),
+                    ("Restore -> Next", Action::RestoreNext),
+                ];
+                for (label, action) in buttons {
+                    let button = egui::Button::new(egui::RichText::new(label).size(15.0))
+                        .min_size(egui::vec2(220.0, 32.0));
+                    if ui.add_enabled(!busy, button).clicked() {
+                        self.trigger(ctx, action);
+                    }
+                    ui.add_space(6.0);
+                }
+
+                ui.add_space(6.0);
 
                 // Reclaim the watcher handle if the watcher finished on its
                 // own (track ended) -- it signals that by clearing `watching`.
@@ -230,7 +227,7 @@ impl eframe::App for App {
                     "Watch current track"
                 };
                 let watch_btn = egui::Button::new(egui::RichText::new(watch_label).size(15.0))
-                    .min_size(egui::vec2(220.0, 34.0));
+                    .min_size(egui::vec2(220.0, 32.0));
                 if ui.add(watch_btn).clicked() {
                     if watching_now {
                         // User turned it off: drop the handle to stop the thread.
@@ -264,7 +261,7 @@ impl eframe::App for App {
                     ctx.request_repaint();
                 }
 
-                ui.add_space(10.0);
+                ui.add_space(8.0);
                 ui.label(egui::RichText::new(self.status.get()).weak());
             });
         });
@@ -280,8 +277,8 @@ impl eframe::App for App {
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([300.0, 280.0])
-            .with_min_inner_size([260.0, 260.0])
+            .with_inner_size([300.0, 270.0])
+            .with_min_inner_size([260.0, 250.0])
             .with_always_on_top()
             .with_resizable(false)
             .with_title("Fade & Skip"),
