@@ -58,7 +58,7 @@ impl SharedStatus {
 struct App {
     config: Config,
     status: SharedStatus,
-    /// True while the track-end watcher is active (the "Watch current track"
+    /// True while the track-end watcher is active (the "Pause after"
     /// toggle). Shared with the watcher thread, which clears it when a track
     /// ends so the UI can reflect that watching has stopped.
     watching: Arc<AtomicBool>,
@@ -195,9 +195,9 @@ impl eframe::App for App {
 
                 let busy = self.status.busy.load(Ordering::SeqCst);
                 let buttons = [
-                    ("Fade -> Pause -> Next", Action::Full),
-                    ("Fade -> Pause", Action::FadePause),
-                    ("Restore -> Next", Action::RestoreNext),
+                    ("Smooth advance", Action::Full),
+                    ("Fade", Action::FadePause),
+                    ("Resume", Action::RestoreNext),
                 ];
                 for (label, action) in buttons {
                     let button = egui::Button::new(egui::RichText::new(label).size(15.0))
@@ -224,7 +224,7 @@ impl eframe::App for App {
                 let watch_label = if watching_now {
                     "Stop watching"
                 } else {
-                    "Watch current track"
+                    "Pause after"
                 };
                 let watch_btn = egui::Button::new(egui::RichText::new(watch_label).size(15.0))
                     .min_size(egui::vec2(220.0, 32.0));

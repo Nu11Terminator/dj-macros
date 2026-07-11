@@ -2,12 +2,13 @@
 
 A tiny always-on-top window with three buttons:
 
-- **Fade → Pause → Next**: the original one-button flow — fades the system
+- **Smooth advance**: the original one-button flow — fades the system
   volume out, sends Play/Pause, restores the volume, then sends Next Track.
-- **Fade → Pause**: fades the volume out and sends Play/Pause, then stops
+- **Fade**: fades the volume out and sends Play/Pause, then stops
   (leaving the volume at silence). Useful when you want to pause now and
   decide later whether to skip.
-- **Watch current track**: starts watching the media session you're playing.
+- **Resume**: restores the volume and sends Next Track.
+- **Pause after**: starts watching the media session you're playing.
   When the current track ends and the *next* track begins, the app instantly
   mutes, pauses that new track, then restores your volume — so the next track
   is never heard. This is for when you start a song and want playback to stop
