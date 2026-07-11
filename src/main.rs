@@ -58,6 +58,13 @@ impl SharedStatus {
 struct App {
     config: Config,
     status: SharedStatus,
+    /// True while the track-end watcher is active (the "Watch current track"
+    /// toggle). Shared with the watcher thread, which clears it when a track
+    /// ends so the UI can reflect that watching has stopped.
+    watching: Arc<AtomicBool>,
+    /// Owns the watcher thread; dropping it stops watching. Wrapped in Arc so
+    /// the toggle handler and the auto-cleanup in `update` can both reach it.
+    watch_handle: Arc<Mutex<Option<platform::WatchHandle>>>,
 }
 
 impl App {
@@ -65,6 +72,8 @@ impl App {
         Self {
             config: Config::load(),
             status: SharedStatus::new(),
+            watching: Arc::new(AtomicBool::new(false)),
+            watch_handle: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -203,6 +212,59 @@ impl eframe::App for App {
                 });
 
                 ui.add_space(10.0);
+
+                // Reclaim the watcher handle if the watcher finished on its
+                // own (track ended) -- it signals that by clearing `watching`.
+                if !self.watching.load(Ordering::SeqCst) {
+                    if let Ok(mut h) = self.watch_handle.lock() {
+                        if h.is_some() {
+                            *h = None;
+                        }
+                    }
+                }
+
+                let watching_now = self.watching.load(Ordering::SeqCst);
+                let watch_label = if watching_now {
+                    "Stop watching"
+                } else {
+                    "Watch current track"
+                };
+                let watch_btn = egui::Button::new(egui::RichText::new(watch_label).size(15.0))
+                    .min_size(egui::vec2(220.0, 34.0));
+                if ui.add(watch_btn).clicked() {
+                    if watching_now {
+                        // User turned it off: drop the handle to stop the thread.
+                        if let Ok(mut h) = self.watch_handle.lock() {
+                            *h = None;
+                        }
+                        self.watching.store(false, Ordering::SeqCst);
+                        self.status.set("Watch stopped");
+                    } else {
+                        let status = self.status.clone();
+                        let ctx2 = ctx.clone();
+                        let watching = self.watching.clone();
+                        let handle = platform::watch_track_end(Box::new(move || {
+                            status.set("Track ended — playback stopped");
+                            watching.store(false, Ordering::SeqCst);
+                            ctx2.request_repaint();
+                        }));
+                        match handle {
+                            Some(h) => {
+                                if let Ok(mut slot) = self.watch_handle.lock() {
+                                    *slot = Some(h);
+                                }
+                                self.watching.store(true, Ordering::SeqCst);
+                                self.status.set("Watching for track end...");
+                            }
+                            None => {
+                                self.status.set("Track-end watching isn't available here");
+                            }
+                        }
+                    }
+                    ctx.request_repaint();
+                }
+
+                ui.add_space(10.0);
                 ui.label(egui::RichText::new(self.status.get()).weak());
             });
         });
@@ -218,8 +280,8 @@ impl eframe::App for App {
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([300.0, 230.0])
-            .with_min_inner_size([260.0, 210.0])
+            .with_inner_size([300.0, 280.0])
+            .with_min_inner_size([260.0, 260.0])
             .with_always_on_top()
             .with_resizable(false)
             .with_title("Fade & Skip"),

@@ -12,7 +12,20 @@
 #[cfg(target_os = "windows")]
 mod windows_impl;
 #[cfg(target_os = "windows")]
-pub use windows_impl::{get_volume, send_next, send_pause, set_volume};
+pub use windows_impl::{
+    get_volume, send_next, send_pause, set_volume, watch_track_end, WatchHandle,
+};
+
+// Track-end watching (SMTC) is only implemented on Windows. On other platforms
+// we expose the same symbols as inert stubs so the UI can show a "not
+// available" message instead of failing to compile.
+#[cfg(not(target_os = "windows"))]
+pub struct WatchHandle;
+
+#[cfg(not(target_os = "windows"))]
+pub fn watch_track_end(_on_ended: Box<dyn Fn() + Send + 'static>) -> Option<WatchHandle> {
+    None
+}
 
 #[cfg(target_os = "macos")]
 mod macos_impl;

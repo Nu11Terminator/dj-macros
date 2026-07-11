@@ -7,9 +7,12 @@ A tiny always-on-top window with three buttons:
 - **Fade → Pause**: fades the volume out and sends Play/Pause, then stops
   (leaving the volume at silence). Useful when you want to pause now and
   decide later whether to skip.
-- **Restore → Next**: restores the volume saved by *Fade → Pause* back to
-  its pre-fade level, then sends Next Track. This is the natural follow-up
-  to *Fade → Pause* — it brings your volume back and advances the track.
+- **Watch current track**: starts watching the media session you're playing.
+  When the current track ends and the *next* track begins, the app instantly
+  mutes, pauses that new track, then restores your volume — so the next track
+  is never heard. This is for when you start a song and want playback to stop
+  once it finishes rather than advancing. Click the button again to stop
+  watching. (Windows only — uses the System Media Transport Controls.)
 
 The full flow (Fade → Pause → Next) is just the two smaller steps run
 back-to-back.
