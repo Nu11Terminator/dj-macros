@@ -297,7 +297,7 @@ impl eframe::App for App {
                         }
 
                         // Expand / collapse toggle.
-                        let toggle_label = if self.expanded { "Collapse ▴" } else { "Expand ▾" };
+                        let toggle_label = if self.expanded { "[-] Collapse" } else { "[+] Expand" };
                         let toggle_btn = egui::Button::new(egui::RichText::new(toggle_label).size(13.0))
                             .min_size(egui::vec2(220.0, 28.0));
                         if ui.add(toggle_btn).clicked() {
@@ -336,12 +336,12 @@ fn main() -> eframe::Result<()> {
             .with_always_on_top()
             .with_resizable(false)
             .with_maximize_button(false)
-            .with_title("Fade & Skip"),
+            .with_title("DJ macros"),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Fade & Skip",
+        "DJ macros",
         options,
         Box::new(|_cc| Box::new(App::new())),
     )
