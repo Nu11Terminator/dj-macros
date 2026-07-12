@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]
 
 mod config;
+mod icon;
 mod platform;
 
 use config::Config;
@@ -336,7 +337,8 @@ fn main() -> eframe::Result<()> {
             .with_always_on_top()
             .with_resizable(false)
             .with_maximize_button(false)
-            .with_title("DJ macros"),
+            .with_title("DJ macros")
+            .with_icon(icon::make_disc_icon()),
         ..Default::default()
     };
 
