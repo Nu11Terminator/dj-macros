@@ -335,6 +335,7 @@ fn main() -> eframe::Result<()> {
             .with_min_inner_size([250.0, 138.0])
             .with_always_on_top()
             .with_resizable(false)
+            .with_maximize_button(false)
             .with_title("Fade & Skip"),
         ..Default::default()
     };
